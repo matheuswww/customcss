@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-void lexer(char s[]) {
+void lexer_class(char s[]) {
   char currentToken[SEARCH_MAX] = {0};
   class classList[CLASSES_MAX] = {0};
   char target[] = "class";
@@ -18,7 +18,7 @@ void lexer(char s[]) {
         s[strIndex] == '<'  || s[strIndex] == '>'  || s[strIndex] == '/'  ||
         s[strIndex] == '='  || s[strIndex] == '"'  || s[strIndex] == '\'' ||
         s[strIndex] == '\n' || s[strIndex] == '\t' || s[strIndex] == '\r' ||
-        s[strIndex] == '\t' || s[strIndex] == '\f' || s[strIndex] == ' '
+        s[strIndex] == '\f' || s[strIndex] == ' '
     ) {
       strIndex++;
       tokenIndex = 0;
@@ -48,58 +48,109 @@ void lexer(char s[]) {
       if (foundClassAttr) {
         char nameBuffer[NAME_MAX];
         char valueBuffer[VALUE_MAX];
+        valueBuffer[0] = '\0';
         int bufIndex = 0;
         bool readingName = false;
-        bool readingValue = false;
+        bool readingVal = false;
+        bool openBracket = false;
+        bool closeBracket = false;
+        bool currentReadInvalid = false;
         while (s[strIndex] != '\0') {
-          if ((bufIndex > NAME_MAX && readingName) || (bufIndex > VALUE_MAX && readingValue)) {
+          if ((bufIndex > NAME_MAX) || (bufIndex > VALUE_MAX)) {
             break;
           }
           strIndex++;
+
           if(
-            ( (s[strIndex] >= 'a' && s[strIndex] <= 'z') ||
-              (s[strIndex] >= 'A' && s[strIndex] <= 'Z') ||
-              (s[strIndex] >= '0' && s[strIndex] <= '9') ||
-              s[strIndex] == '_' || s[strIndex] == '[' || s[strIndex] == ']' ||
-              (s[strIndex] == '-' && readingName) )
+            !currentReadInvalid && (
+            (s[strIndex] >= 'a' && s[strIndex] <= 'z') ||
+            (s[strIndex] >= 'A' && s[strIndex] <= 'Z') ||
+            (s[strIndex] == '[') || (s[strIndex] == ']') ||
+            (s[strIndex] >= '0' && s[strIndex] <= '9') ||
+            (s[strIndex] == '_') || (s[strIndex] == '-') ||
+            ( (openBracket && !closeBracket) && 
+              (
+                s[strIndex] == '\n' || s[strIndex] == '\r' || 
+                s[strIndex] == '\t' || s[strIndex] == '\f' || 
+                s[strIndex] == ' ' 
+              )
+            )
+            )
             ) {
-              if (s[strIndex] == '-') {
+              if (
+                (s[strIndex] == '-' && (readingName && s[strIndex+1] == '-')) || 
+                ((s[strIndex] == '[' && ((openBracket || !readingName) || s[strIndex-1] != '-')) ||
+                (s[strIndex] == ']' && (!openBracket || !readingVal)))
+                ) {
+                readingVal = false;
+                readingName = false;
+                currentReadInvalid = true;
+              } else if (s[strIndex] == '[') {
+                nameBuffer[bufIndex-1] = 0;
                 nameBuffer[bufIndex] = '\0';
-                readingValue = true;
+                openBracket = true;
+                readingVal = true;
                 readingName = false;
                 bufIndex = 0;
                 continue;
-              } else if (!readingValue) {
-                if (!readingName) {
+              } else if (s[strIndex] == ']') {
+                valueBuffer[bufIndex] = '\0';
+                closeBracket = true;
+                continue;
+              } else {
+                if (!readingName && !readingVal) {
                   readingName = true;
                 }
-                nameBuffer[bufIndex] = s[strIndex];
-              } else {
-                valueBuffer[bufIndex] = s[strIndex];
-              }
-            } else {
-              if (readingValue && bufIndex > 0) {
-                valueBuffer[bufIndex] = '\0';
-                readingValue = false;
-                class *newClass = (class*)malloc(sizeof(class));
-                memmove(newClass->name, nameBuffer, NAME_MAX);
-                memmove(newClass->val, valueBuffer, VALUE_MAX);
-                classList[classCount] = *newClass;
-                classCount++;
-                if (classCount > (CLASSES_MAX / sizeof(class))) {
-                  break;
+                if (readingName) {
+                  nameBuffer[bufIndex] = s[strIndex];
+                  bufIndex++;
                 }
+                if(readingVal) {
+                  valueBuffer[bufIndex] = s[strIndex];
+                  bufIndex++;
+                }
+                continue;
               }
-              readingValue = false;
-              readingName = false;
-              bufIndex = 0;
-              memset(nameBuffer, 0, sizeof(NAME_MAX));
-              if (s[strIndex] == '"' || s[strIndex] == '\'') {
+            }
+
+            if (
+              s[strIndex] != '\n' && s[strIndex] != '\t' && s[strIndex] != '\r' &&
+              s[strIndex] != '\t' && s[strIndex] != '\f' && s[strIndex] != ' ' &&
+              s[strIndex] != '"' && s[strIndex] != '\'' && s[strIndex] != '\0'
+            ) {
+              currentReadInvalid = true;
+            } else {
+              if (currentReadInvalid) {
+                currentReadInvalid = false;
+              }
+            }
+            if ((readingName || readingVal) && !currentReadInvalid && (openBracket == closeBracket)) {
+              if (readingName) {
+                if (bufIndex > 0 && nameBuffer[bufIndex-1] == '-') {
+                  nameBuffer[bufIndex-1] = 0;
+                  bufIndex-=1;
+                }
+                nameBuffer[bufIndex] = '\0';
+              }
+              class *newClass = (class*)malloc(sizeof(class));
+              memmove(newClass->name, nameBuffer, NAME_MAX);
+              memmove(newClass->val, valueBuffer, VALUE_MAX);
+              classList[classCount] = *newClass;
+              classCount++;
+              if (classCount > (CLASSES_MAX / sizeof(class))) {
                 break;
               }
-              continue;
             }
-            bufIndex++;
+            bufIndex = 0;
+            openBracket = false;
+            readingName = false;
+            closeBracket = false;
+            readingVal = false;
+            memset(nameBuffer, 0, sizeof(NAME_MAX));
+            memset(valueBuffer, 0, sizeof(NAME_MAX));
+            if (s[strIndex] == '"' || s[strIndex] == '\'') {
+              break;
+          }
         }
       }
     }
