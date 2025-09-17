@@ -11,5 +11,4 @@ typedef struct {
   char val[VALUE_MAX];
 } class;
 
-void lexer(char[]);
-
+void lexer_class(char[]);

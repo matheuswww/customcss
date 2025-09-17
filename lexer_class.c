@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 void lexer_class(char s[]) {
+  class* classList = (class*)malloc(sizeof(class) * CLASSES_MAX);
   char currentToken[SEARCH_MAX] = {0};
-  class classList[CLASSES_MAX] = {0};
   char target[] = "class";
   int tokenIndex = 0;
   int strIndex = 0;
@@ -54,7 +54,7 @@ void lexer_class(char s[]) {
         bool readingVal = false;
         bool openBracket = false;
         bool closeBracket = false;
-        bool currentReadInvalid = false;
+        bool ignoreCurrentString = false;
         while (s[strIndex] != '\0') {
           if ((bufIndex > NAME_MAX) || (bufIndex > VALUE_MAX)) {
             break;
@@ -62,7 +62,7 @@ void lexer_class(char s[]) {
           strIndex++;
 
           if(
-            !currentReadInvalid && (
+            !ignoreCurrentString && (
             (s[strIndex] >= 'a' && s[strIndex] <= 'z') ||
             (s[strIndex] >= 'A' && s[strIndex] <= 'Z') ||
             (s[strIndex] == '[') || (s[strIndex] == ']') ||
@@ -84,7 +84,7 @@ void lexer_class(char s[]) {
                 ) {
                 readingVal = false;
                 readingName = false;
-                currentReadInvalid = true;
+                ignoreCurrentString = true;
               } else if (s[strIndex] == '[') {
                 nameBuffer[bufIndex-1] = 0;
                 nameBuffer[bufIndex] = '\0';
@@ -118,13 +118,13 @@ void lexer_class(char s[]) {
               s[strIndex] != '\t' && s[strIndex] != '\f' && s[strIndex] != ' ' &&
               s[strIndex] != '"' && s[strIndex] != '\'' && s[strIndex] != '\0'
             ) {
-              currentReadInvalid = true;
+              ignoreCurrentString = true;
             } else {
-              if (currentReadInvalid) {
-                currentReadInvalid = false;
+              if (ignoreCurrentString) {
+                ignoreCurrentString = false;
               }
             }
-            if ((readingName || readingVal) && !currentReadInvalid && (openBracket == closeBracket)) {
+            if ((readingName || readingVal) && !ignoreCurrentString && (openBracket == closeBracket)) {
               if (readingName) {
                 if (bufIndex > 0 && nameBuffer[bufIndex-1] == '-') {
                   nameBuffer[bufIndex-1] = 0;
@@ -132,10 +132,8 @@ void lexer_class(char s[]) {
                 }
                 nameBuffer[bufIndex] = '\0';
               }
-              class *newClass = (class*)malloc(sizeof(class));
-              memmove(newClass->name, nameBuffer, NAME_MAX);
-              memmove(newClass->val, valueBuffer, VALUE_MAX);
-              classList[classCount] = *newClass;
+              memmove(classList[classCount].name, nameBuffer, NAME_MAX);
+              memmove(classList[classCount].val, valueBuffer, VALUE_MAX);
               classCount++;
               if (classCount > (CLASSES_MAX / sizeof(class))) {
                 break;
