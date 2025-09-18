@@ -10,6 +10,6 @@
 typedef struct {
   char name[NAME_MAX];
   char val[VALUE_MAX];
-} class;
+} Class;
 
 Vector* lexer_class(char[]);

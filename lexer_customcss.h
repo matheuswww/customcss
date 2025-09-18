@@ -10,4 +10,4 @@ Vector* lexer_customcss(char s[]);
 typedef struct {
   char class_name[NAME_MAX];
   char css[CSS_MAX];
-} css;
+} Css;

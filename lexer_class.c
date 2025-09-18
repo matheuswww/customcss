@@ -6,7 +6,7 @@
 #include "vector.h"
 
 Vector* lexer_class(char s[]) {
-  Vector* vector = vector_init(sizeof(class));
+  Vector* vector = vector_init(sizeof(Class));
   char currentToken[SEARCH_MAX] = {0};
   char target[] = "class";
   int tokenIndex = 0;
@@ -132,14 +132,14 @@ Vector* lexer_class(char s[]) {
                 }
                 nameBuffer[bufIndex] = '\0';
               }
-              class *c = malloc(sizeof(class));
-               if (!c) {
+              Class *class = malloc(sizeof(Class));
+               if (!class) {
                 perror("malloc failed!");
                 exit(EXIT_FAILURE);
               }
-              strcpy(c->name, nameBuffer);
-              strcpy(c->val, valueBuffer);
-              vector_push(vector, c);
+              strcpy(class->name, nameBuffer);
+              strcpy(class->val, valueBuffer);
+              vector_push(vector, class);
               if (vector->len > (CLASSES_MAX / sizeof(class))) {
                 break;
               }
@@ -162,8 +162,8 @@ Vector* lexer_class(char s[]) {
   }
 
   for (int i = 0; i < vector->len; i++) {
-    printf("name: %s\n", (*((class*)(vector_get(vector, i)))).name);
-    printf("val: %s\n", (*((class*)(vector_get(vector, i)))).val);
+    printf("name: %s\n", (*((Class*)(vector_get(vector, i)))).name);
+    printf("val: %s\n", (*((Class*)(vector_get(vector, i)))).val);
   }
 
   return vector;

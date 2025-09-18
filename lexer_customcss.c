@@ -6,7 +6,7 @@
 #include "vector.h"
 
 Vector* lexer_customcss(char s[]) {
-  Vector* vector = vector_init(sizeof(css));
+  Vector* vector = vector_init(sizeof(Css));
   char nameBuffer[NAME_MAX] = {0};
   char cssBuffer[CSS_MAX] = {0};
   int cssIndex = 0;
@@ -68,14 +68,14 @@ Vector* lexer_customcss(char s[]) {
     }
     
     if (closeCurlyBracket) {
-      css* c = malloc(sizeof(css));
-      if (!c) {
+      Css* css = malloc(sizeof(css));
+      if (!css) {
         perror("malloc failed!");
         exit(EXIT_FAILURE);
       }
-      strcpy(c->class_name, nameBuffer);
-      strcpy(c->css, cssBuffer);
-      vector_push(vector, c);
+      strcpy(css->class_name, nameBuffer);
+      strcpy(css->css, cssBuffer);
+      vector_push(vector, css);
     }
 
     if (ignoreCurrentString || closeCurlyBracket) {
@@ -94,8 +94,8 @@ Vector* lexer_customcss(char s[]) {
 
 
   for (int i = 0; i < vector->len; i++) {
-    printf("%s\n", (*((css*)(vector_get(vector, i)))).class_name);
-    printf("%s\n", (*((css*)(vector_get(vector, i)))).css);
+    printf("%s\n", (*((Css*)(vector_get(vector, i)))).class_name);
+    printf("%s\n", (*((Css*)(vector_get(vector, i)))).css);
   }
 
   return vector;
