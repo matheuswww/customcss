@@ -69,6 +69,10 @@ Vector* lexer_customcss(char s[]) {
     
     if (closeCurlyBracket) {
       css* c = malloc(sizeof(css));
+      if (!c) {
+        perror("malloc failed!");
+        exit(EXIT_FAILURE);
+      }
       strcpy(c->class_name, nameBuffer);
       strcpy(c->css, cssBuffer);
       vector_push(vector, c);

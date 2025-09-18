@@ -133,6 +133,10 @@ Vector* lexer_class(char s[]) {
                 nameBuffer[bufIndex] = '\0';
               }
               class *c = malloc(sizeof(class));
+               if (!c) {
+                perror("malloc failed!");
+                exit(EXIT_FAILURE);
+              }
               strcpy(c->name, nameBuffer);
               strcpy(c->val, valueBuffer);
               vector_push(vector, c);
