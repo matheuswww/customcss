@@ -3,14 +3,14 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "vector.h"
 
-void lexer_customcss(char s[]) {
-  css *cssList = (css*)malloc(sizeof(css) * CSS_CLASS_MAX);
+Vector* lexer_customcss(char s[]) {
+  Vector* vector = vector_init(sizeof(css));
   char nameBuffer[NAME_MAX] = {0};
   char cssBuffer[CSS_MAX] = {0};
   int cssIndex = 0;
   int nameIndex = 0;
-  int cssListIndex = 0;
   int strIndex = 0;
   bool ignoreCurrentString = false;
   bool openCurlyBracket = false;
@@ -68,9 +68,10 @@ void lexer_customcss(char s[]) {
     }
     
     if (closeCurlyBracket) {
-      strcpy(cssList[cssListIndex].class_name, nameBuffer);
-      strcpy(cssList[cssListIndex].css, cssBuffer);
-      cssListIndex++;
+      css* c = malloc(sizeof(css));
+      strcpy(c->class_name, nameBuffer);
+      strcpy(c->css, cssBuffer);
+      vector_push(vector, c);
     }
 
     if (ignoreCurrentString || closeCurlyBracket) {
@@ -88,8 +89,10 @@ void lexer_customcss(char s[]) {
   }
 
 
-  for (int i = 0; i < cssListIndex; i++) {
-    printf("%s\n", cssList[i].class_name);
-    printf("%s\n", cssList[i].css);
+  for (int i = 0; i < vector->len; i++) {
+    printf("%s\n", (*((css*)(vector_get(vector, i)))).class_name);
+    printf("%s\n", (*((css*)(vector_get(vector, i)))).css);
   }
+
+  return vector;
 }

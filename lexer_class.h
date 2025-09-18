@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "vector.h"
 
 #define CLASSES_MAX 4096
 #define SEARCH_MAX 6
@@ -11,4 +12,4 @@ typedef struct {
   char val[VALUE_MAX];
 } class;
 
-void lexer_class(char[]);
+Vector* lexer_class(char[]);
