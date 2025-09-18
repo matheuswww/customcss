@@ -132,8 +132,8 @@ void lexer_class(char s[]) {
                 }
                 nameBuffer[bufIndex] = '\0';
               }
-              memmove(classList[classCount].name, nameBuffer, NAME_MAX);
-              memmove(classList[classCount].val, valueBuffer, VALUE_MAX);
+              strcpy(classList[classCount].name, nameBuffer);
+              strcpy(classList[classCount].val, valueBuffer);
               classCount++;
               if (classCount > (CLASSES_MAX / sizeof(class))) {
                 break;
@@ -145,7 +145,7 @@ void lexer_class(char s[]) {
             closeBracket = false;
             readingVal = false;
             memset(nameBuffer, 0, sizeof(NAME_MAX));
-            memset(valueBuffer, 0, sizeof(NAME_MAX));
+            memset(valueBuffer, 0, sizeof(VALUE_MAX));
             if (s[strIndex] == '"' || s[strIndex] == '\'') {
               break;
           }

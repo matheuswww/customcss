@@ -68,8 +68,8 @@ void lexer_customcss(char s[]) {
     }
     
     if (closeCurlyBracket) {
-      memmove(cssList[cssListIndex].class_name, nameBuffer, NAME_MAX);
-      memmove(cssList[cssListIndex].css, cssBuffer, CSS_MAX);
+      strcpy(cssList[cssListIndex].class_name, nameBuffer);
+      strcpy(cssList[cssListIndex].css, cssBuffer);
       cssListIndex++;
     }
 
