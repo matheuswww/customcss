@@ -68,7 +68,7 @@ Vector* lexer_customcss(char s[]) {
     }
     
     if (closeCurlyBracket) {
-      Css* css = malloc(sizeof(css));
+      Css* css = malloc(sizeof(Css));
       if (!css) {
         perror("malloc failed!");
         exit(EXIT_FAILURE);
@@ -90,12 +90,6 @@ Vector* lexer_customcss(char s[]) {
     }
 
     strIndex++;
-  }
-
-
-  for (int i = 0; i < vector->len; i++) {
-    printf("%s\n", (*((Css*)(vector_get(vector, i)))).class_name);
-    printf("%s\n", (*((Css*)(vector_get(vector, i)))).css);
   }
 
   return vector;
