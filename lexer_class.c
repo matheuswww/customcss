@@ -8,7 +8,7 @@
 Vector* lexer_class(char s[]) {
   Vector* vector = vector_init(sizeof(Class));
   char currentToken[SEARCH_MAX] = {0};
-  char target[] = "class";
+  char *target = "class";
   int tokenIndex = 0;
   int strIndex = 0;
 
@@ -49,7 +49,6 @@ Vector* lexer_class(char s[]) {
         char nameBuffer[NAME_MAX];
         char valueBuffer[VALUE_MAX];
         valueBuffer[0] = '\0';
-        nameBuffer[0] = '\0';
         int bufIndex = 0;
         bool readingName = false;
         bool readingVal = false;
@@ -150,12 +149,8 @@ Vector* lexer_class(char s[]) {
             readingName = false;
             closeBracket = false;
             readingVal = false;
-            if (nameBuffer[bufIndex] != '\0') {
-              memset(nameBuffer, 0, sizeof(NAME_MAX));
-            }
-            if (valueBuffer[bufIndex] != '\0') {
-              memset(valueBuffer, 0, sizeof(VALUE_MAX));
-            }
+            memset(nameBuffer, 0, sizeof(NAME_MAX));
+            memset(valueBuffer, 0, sizeof(VALUE_MAX));
             if (s[strIndex] == '"' || s[strIndex] == '\'') {
               break;
           }

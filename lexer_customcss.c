@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "vector.h"
 
-Vector* lexer_customcss(char s[]) {
+Vector* lexer_customcss(char *s) {
   Vector* vector = vector_init(sizeof(CustomCSS));
   char nameBuffer[NAME_MAX] = {0};
   char cssBuffer[CSS_MAX] = {0};
@@ -18,7 +18,7 @@ Vector* lexer_customcss(char s[]) {
   bool colon = false;
   nameBuffer[nameIndex] = '\0';
   cssBuffer[cssIndex] = '\0';
-
+  
   while (s[strIndex] != '\0') {
     if (openCurlyBracket) {
       cssBuffer[cssIndex] = s[strIndex];
