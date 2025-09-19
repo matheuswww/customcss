@@ -6,7 +6,7 @@
 #include "vector.h"
 
 Vector* lexer_customcss(char s[]) {
-  Vector* vector = vector_init(sizeof(Css));
+  Vector* vector = vector_init(sizeof(CustomCSS));
   char nameBuffer[NAME_MAX] = {0};
   char cssBuffer[CSS_MAX] = {0};
   int cssIndex = 0;
@@ -16,6 +16,8 @@ Vector* lexer_customcss(char s[]) {
   bool openCurlyBracket = false;
   bool closeCurlyBracket = false;
   bool colon = false;
+  nameBuffer[nameIndex] = '\0';
+  cssBuffer[cssIndex] = '\0';
 
   while (s[strIndex] != '\0') {
     if (openCurlyBracket) {
@@ -68,14 +70,14 @@ Vector* lexer_customcss(char s[]) {
     }
     
     if (closeCurlyBracket) {
-      Css* css = malloc(sizeof(Css));
-      if (!css) {
+      CustomCSS* customCSS = malloc(sizeof(CustomCSS));
+      if (!customCSS) {
         perror("malloc failed!");
         exit(EXIT_FAILURE);
       }
-      strcpy(css->class_name, nameBuffer);
-      strcpy(css->css, cssBuffer);
-      vector_push(vector, css);
+      strcpy(customCSS->class_name, nameBuffer);
+      strcpy(customCSS->css, cssBuffer);
+      vector_push(vector, customCSS);
     }
 
     if (ignoreCurrentString || closeCurlyBracket) {
@@ -85,8 +87,12 @@ Vector* lexer_customcss(char s[]) {
       nameIndex = 0;
       cssIndex = 0;
       closeCurlyBracket = false;
-      memset(nameBuffer, 0, sizeof(NAME_MAX));
-      memset(cssBuffer, 0, sizeof(CSS_CLASS_MAX));
+      if (nameBuffer[nameIndex] != '\0') {
+        memset(nameBuffer, 0, sizeof(NAME_MAX));
+      }
+      if (cssBuffer[cssIndex] != '\0') {
+        memset(cssBuffer, 0, sizeof(CSS_CLASS_MAX));
+      }
     }
 
     strIndex++;
