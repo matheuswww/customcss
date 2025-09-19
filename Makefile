@@ -4,7 +4,7 @@ flags= -O2 -Wall -std=c2x -I.
 
 all: main
 
-main: main.o lexer_class.o lexer_customcss.o vector.o
+main: main.o lexer_class.o lexer_customcss.o vector.o parser.o file.o
 	gcc $(flags) $^ -o $@
 
 lexer_class.o: lexer_class.c
@@ -14,6 +14,12 @@ lexer_customcss.o: lexer_customcss.c
 	gcc $(flags) -c $^ -o $@
 
 vector.o: vector.c
+	gcc $(flags) -c $^ -o $@
+
+parser.o: parser.c
+	gcc $(flags) -c $^ -o $@
+
+file.o: file.c
 	gcc $(flags) -c $^ -o $@
 
 clean: 
