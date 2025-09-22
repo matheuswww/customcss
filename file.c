@@ -16,9 +16,8 @@ void write_file(const char *path, const char *w, int bytes) {
 char* read_file(const char *path) {
   FILE *file = fopen(path, "r");
   if (!file) {
-    perror("Error trying openfile");
-    exit(EXIT_FAILURE);
-    return NULL;
+      perror("Error trying to open file");
+      exit(EXIT_FAILURE);
   }
 
   fseek(file, 0, SEEK_END);
@@ -27,15 +26,20 @@ char* read_file(const char *path) {
 
   char *content = malloc(length + 1);
   if (!content) {
-    perror("malloc failed");
-    exit(EXIT_FAILURE);
-    fclose(file);
-    return NULL;
+      perror("malloc failed");
+      fclose(file);
+      exit(EXIT_FAILURE);
   }
 
-  fread(content, 1, length, file);
-  content[length] = '\0';
+  size_t bytesRead = fread(content, 1, length, file);
+  if (bytesRead != length) {
+    fprintf(stderr, "Error: failed to read file %s (read %zu of %ld bytes)\n",
+            path, bytesRead, length);
+    fclose(file);
+    exit(EXIT_FAILURE);
+  }
 
+  content[length] = '\0';
   fclose(file);
   return content;
 }

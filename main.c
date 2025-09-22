@@ -1,4 +1,4 @@
-#include "lexer_class.h"
+#include "lexer_classes.h"
 #include "lexer_customcss.h"
 #include "parser.h"
 #include "vector.h"
@@ -26,10 +26,10 @@ int main(int argc, char* argv[]) {
   };
 
   char classes_str[] = "";
-  Vector* customcss = lexer_customcss(customcssContent);
-  Vector* classes = lexer_class(htmlContent);
+  Vector* customcss = lex_customcss(customcssContent);
+  Vector* classes = lex_classes(htmlContent);
 
-  parser(customcss, classes, argv[3]);
+  parse(customcss, classes, argv[3]);
 
   vector_free(customcss);
   vector_free(classes);

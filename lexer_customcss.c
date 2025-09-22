@@ -5,96 +5,111 @@
 #include <stdlib.h>
 #include "vector.h"
 
-Vector* lexer_customcss(char *s) {
+Vector* lex_customcss(char *s) {
   Vector* vector = vector_init(sizeof(CustomCSS));
-  char nameBuffer[NAME_MAX] = {0};
+  char nameBuffer[CLASS_NAME_MAX] = {0};
   char cssBuffer[CSS_MAX] = {0};
   int cssIndex = 0;
   int nameIndex = 0;
   int strIndex = 0;
-  bool ignoreCurrentString = false;
-  bool openCurlyBracket = false;
-  bool closeCurlyBracket = false;
-  bool colon = false;
+  LexerCustomCSS_State state = STATE_NAME;
+
   nameBuffer[nameIndex] = '\0';
   cssBuffer[cssIndex] = '\0';
   
   while (s[strIndex] != '\0') {
-    if (openCurlyBracket) {
-      cssBuffer[cssIndex] = s[strIndex];
-      cssIndex++;
-    }
-    if(
-      (!openCurlyBracket || s[strIndex] == '}') &&
-      (
-        (s[strIndex] >= 'a' && s[strIndex] <= 'z') ||
-        (s[strIndex] >= 'A' && s[strIndex] <= 'Z') ||
-        (s[strIndex] >= '0' && s[strIndex] <= '9') ||
-        (s[strIndex] == '_') || (s[strIndex] == '-') ||
-        (s[strIndex] == '{' || s[strIndex] == '}') ||
-        (s[strIndex] == ' ') ||
-        (s[strIndex] == ':')
-      )
-    ) {
-      switch (s[strIndex])
-      {
-        case '{':
-          if (!colon) {
-            ignoreCurrentString = true;
-            break;
-          }
-          nameBuffer[nameIndex] = '\0'; 
-          openCurlyBracket = true;
-          continue;
-        case '}':
-          if (!openCurlyBracket) {
-            ignoreCurrentString = true;
-          }
-          cssBuffer[cssIndex] = '\0';
-          closeCurlyBracket = true;
-          break;
-        case ':':
-          if (colon) {
-            ignoreCurrentString = true; 
-            break;
-          }
-          colon = true;
-          break;
-        case ' ':
-          break;
-        default:          
-          nameBuffer[nameIndex] = s[strIndex];
-          nameIndex++;
-          break;
-      }  
-    }
+    char c = s[strIndex];
     
-    if (closeCurlyBracket) {
-      CustomCSS* customCSS = malloc(sizeof(CustomCSS));
-      if (!customCSS) {
-        perror("malloc failed!");
-        exit(EXIT_FAILURE);
-      }
-      strcpy(customCSS->class_name, nameBuffer);
-      strcpy(customCSS->css, cssBuffer);
-      vector_push(vector, customCSS);
-    }
+    switch (state) {
+      case STATE_NAME:
+        if (
+          (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+          (c >= '0' && c <= '9') || c == '_' || c == '-' || c == ':'
+        ) {
+          if (c == ':') {
+            state = STATE_EXPECT_CSS;
+          } else {
+            if (nameIndex >= CLASS_NAME_MAX - 1) {
+              fprintf(stderr,
+              "Error: class name buffer memory limit exceeded max %d\n", CLASS_NAME_MAX - 1);
+              exit(EXIT_FAILURE);
+            }
+            nameBuffer[nameIndex++] = c;
+          }
+        } else {
+          state = STATE_IGNORE_CSS_VAL;
+        }
+        break;
 
-    if (ignoreCurrentString || closeCurlyBracket) {
-      colon = false;
-      openCurlyBracket = false;
-      ignoreCurrentString = false;
+      case STATE_EXPECT_CSS:
+        if (c == '{') {
+          state = STATE_CSS;
+          cssBuffer[cssIndex++] = c;
+        } else if (
+          c != '\n' && c != '\r' && 
+          c != '\t' && c != '\f' && 
+          c != ' '
+        ) {
+          state = STATE_IGNORE_CSS_VAL;
+        }
+        break;
+
+      case STATE_CSS:
+        if (c == '}') {
+          if (vector->len > CLASSES_MAX) {
+            fprintf(stderr,
+            "Error: CustomCSS vector memory limit exceeded "
+            "(%d elements, max allowed %d)\n",
+            vector->len, CLASSES_MAX);
+            exit(EXIT_FAILURE);
+          }
+
+          cssBuffer[cssIndex++] = c;
+          cssBuffer[cssIndex] = '\0';
+          nameBuffer[nameIndex] = '\0';
+          
+          CustomCSS* customCSS = malloc(sizeof(CustomCSS));
+          if (!customCSS) {
+            perror("malloc failed!");
+            exit(EXIT_FAILURE);
+          }
+
+          strncpy(customCSS->class_name, nameBuffer, CLASS_NAME_MAX);
+          strncpy(customCSS->css, cssBuffer, CSS_MAX);
+
+          vector_push(vector, customCSS);
+
+          memset(nameBuffer, 0, CLASS_NAME_MAX);
+          memset(cssBuffer, 0, sizeof(cssBuffer));
+          nameIndex = 0;
+          cssIndex = 0;
+
+          state = STATE_NAME;
+        } else {
+           if (cssIndex >= CSS_MAX - 1) {
+            fprintf(stderr,
+            "Error: css buffer memory limit exceeded max %d\n", CLASS_NAME_MAX - 1);
+            exit(EXIT_FAILURE);
+           } 
+          cssBuffer[cssIndex++] = c;
+        }
+        break;
+
+      default:
+        break;
+    }
+    if (
+        state == STATE_IGNORE_CSS_VAL && (
+          (s[strIndex+1] >= 'a' && s[strIndex+1] <= 'z') || (s[strIndex+1] >= 'A' && s[strIndex+1] <= 'Z') ||
+          (s[strIndex+1] >= '0' && s[strIndex+1] <= '9') || s[strIndex+1] == '_' || s[strIndex+1] == '-' || s[strIndex+1] == ':'
+        )
+      ) {
+      memset(nameBuffer, 0, sizeof(nameBuffer));
+      memset(cssBuffer, 0, sizeof(cssBuffer));
       nameIndex = 0;
       cssIndex = 0;
-      closeCurlyBracket = false;
-      if (nameBuffer[nameIndex] != '\0') {
-        memset(nameBuffer, 0, sizeof(NAME_MAX));
-      }
-      if (cssBuffer[cssIndex] != '\0') {
-        memset(cssBuffer, 0, sizeof(CSS_CLASS_MAX));
-      }
+      state = STATE_NAME;
     }
-
     strIndex++;
   }
 
