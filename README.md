@@ -35,7 +35,7 @@ The program parses these rules and scans the HTML file, generating a final .css 
 
 ## How to build and run
 
-1. Build the project using `make`:
+1. Build the project using `make`
 
 2. Run the program with three arguments:
 
