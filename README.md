@@ -6,6 +6,7 @@ CustomCSS is a small framework written in C that converts .customcss rules into 
 
 Create rules in a .customcss file. Example:
 
+bg-blue: { background-color: blue; }
 text-green: { color: green; }
 h: { height: [value]; }
 w: { width: [value]; }
