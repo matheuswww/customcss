@@ -1,4 +1,3 @@
-# customcss
 # CustomCSS
 
 CustomCSS is a small framework written in C that converts .customcss rules into a valid .css file. It allows you to define class-like shortcuts and even use dynamic values.
