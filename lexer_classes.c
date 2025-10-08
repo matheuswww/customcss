@@ -15,6 +15,7 @@ Vector* lex_classes(char s[]) {
   int searchTargetIndex = 0;
   int strIndex = 0;
   Vector* vector = vector_init(sizeof(Class));
+
   while (s[strIndex] != '\0') {
     char c = s[strIndex];
     

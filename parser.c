@@ -39,8 +39,11 @@ void parse(Vector *customcss, Vector *classes, char *cssPath) {
           BUFFER_CSS_MAX - 1);
           exit(EXIT_FAILURE);
         }
-        insertVal(found->css, c->custom_val);
-        written = snprintf(css_buffer + total_css_bytes, BUFFER_CSS_MAX - total_css_bytes, ".%s-\\[%s\\] %s\n", found->class_name, c->custom_val, found->css);
+        char *css_copy = malloc(CSS_MAX);
+        strcpy(css_copy, found->css);
+        insertVal(css_copy, c->custom_val);
+        written = snprintf(css_buffer + total_css_bytes, BUFFER_CSS_MAX - total_css_bytes, ".%s-\\[%s\\] %s\n", found->class_name, c->custom_val, css_copy);
+        free(css_copy);
       }
       if (written < 0) {
         perror("snprintf failed!");
@@ -70,7 +73,7 @@ void insertVal(char dst[CSS_MAX], char src[CUSTOM_VALUE_MAX]) {
   int strIndex = 0;
   int start_val_index = 0;
   LexerVal_State state = STATE_IGNORE;
-
+  
   while (dst[strIndex] != '\0') {
     switch (state) {
       case STATE_SEARCH_KEY:
@@ -113,6 +116,7 @@ void insertVal(char dst[CSS_MAX], char src[CUSTOM_VALUE_MAX]) {
 
       case STATE_INSERT_VALUE:
         int valIndex = 0;
+
         while (src[valIndex] != '\0') {
           dst[strIndex] = src[valIndex];
           valIndex++;
