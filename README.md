@@ -39,6 +39,6 @@ The program parses these rules and scans the HTML file, generating a final .css 
 
 2. Run the program with three arguments:
 
-- Path to the `.customcss` file.
 - Path to the HTML file to scan.
+- Path to the `.customcss` file.
 - Path where the generated `.css` file should be saved.
